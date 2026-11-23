@@ -5,7 +5,7 @@
 > 一套給 PM 用 Claude Code「從零到有設計一個系統」的 spec-driven 工作流：
 > **人決策、AI 執行與稽核**，並依任務難度分配模型等級。
 
-這個 repo 收錄的是**方法論本身**：工作流規則書（`workflow/`）與 12 個 Claude Code subagent 定義（`agents-setup/`），另附 1 個 slash command（`commands/`）與 3 個 skill（`skills/`）。
+這個資料夾（`agent-workflow/`）收錄的是**方法論本身**：工作流規則書（`workflow/`）與 12 個 Claude Code subagent 定義（`agents-setup/`），另附 1 個 slash command（`commands/`）、3 個 skill（`skills/`）與 1 份配方（`recipes/`：SPEC 版本分支，附同步腳本與測試）。規則書索引見 [`workflow/README.md`](workflow/README.md)。
 目前是展示版（v0.1）：專案 template、起手腳本與輔助檢查腳本尚未包含，規則書中提到的腳本請視為設計說明。
 
 ---
@@ -26,7 +26,7 @@
 
 **🚦 Token Gate**：會大量消耗 token 的節點（實作、產測試、跑測試、批次展開），開跑前先回報「範圍與規模預估」，等 PM 同意才執行；預設一次只跑一個功能。
 
-**Vendoring（自足）**：起新專案時把 `workflow/` 與 `agents-setup/` 複製進專案的 `.claude/`。專案交給別人的 Claude 也能照同一套流程跑，不需要安裝這個 repo。
+**Vendoring（自足）**：起新專案時把 `workflow/` 與 `agents-setup/` 複製進專案的 `.claude/`。專案交給別人的 Claude 也能照同一套流程跑，不需要安裝這個資料夾。
 
 ---
 
@@ -73,7 +73,7 @@
 
 **SPEC 生命週期**：正文只寫現行行為；每次異動都新增一份決策檔（結論、Why、否決的方案、推翻了什麼），並綁定工作項；延後的功能搬進 `Spec/Deferred/`，不留在正文。既有編號永不重編，退役或延後的編號保留不重用。見 [`workflow/phase-0-spec-update.md`](workflow/phase-0-spec-update.md) §SPEC 生命週期。
 
-**SPEC 版本分支**：SPEC 一律寫在 `main`，但 `main` 常同時放好幾版的行為。宣告啟用的專案，每個開發中的 milestone 一條 `spec/vX.Y.Z` 分支，CI 依工作項的 milestone 把 `main` 的 commit 挑進該挑的分支；RD／QA 讀分支就拿到「這版完整的行為」，release 打 tag 後凍結。規則見 §SPEC 生命週期 7，安裝與操作見新的 `recipes/` 資料夾：[`recipes/spec-version-branches.md`](recipes/spec-version-branches.md)（同步腳本、測試與 CI 片段在 [`recipes/spec-version-branches/`](recipes/spec-version-branches/)）。
+**SPEC 版本分支**：SPEC 一律寫在 `main`，但 `main` 常同時放好幾版的行為。宣告啟用的專案，每個開發中的 milestone 一條 `spec/vX.Y.Z` 分支，CI 依工作項的 milestone 把 `main` 的 commit 挑進該挑的分支；RD／QA 讀分支就拿到「這版完整的行為」，release 打 tag 後凍結。規則見 §SPEC 生命週期 7，安裝與操作見 `recipes/` 資料夾：[`recipes/spec-version-branches.md`](recipes/spec-version-branches.md)（同步腳本、測試與 CI 片段在 [`recipes/spec-version-branches/`](recipes/spec-version-branches/)）。
 
 ## 12 個 agents
 
@@ -96,6 +96,8 @@ Phase 7 是人工抽測，由 PM 自己跑。Phase 3（Mockup）已併入 Phase 
 
 ## 規則書索引
 
+分組索引與建議閱讀順序見 [`workflow/README.md`](workflow/README.md)。
+
 | 檔案 | 內容 |
 |---|---|
 | [`entry-routing.md`](workflow/entry-routing.md) | 需求進來走哪條軌 |
@@ -112,8 +114,8 @@ Phase 7 是人工抽測，由 PM 自己跑。Phase 3（Mockup）已併入 Phase 
 ```bash
 # 在你的專案根目錄
 mkdir -p .claude/agents .claude/workflow
-cp <this-repo>/agents-setup/*.md .claude/agents/
-cp <this-repo>/workflow/*.md     .claude/workflow/
+cp <this-repo>/agent-workflow/agents-setup/*.md .claude/agents/
+cp <this-repo>/agent-workflow/workflow/*.md     .claude/workflow/
 ```
 
 接著在 Claude Code 裡輸入 `/agents` 確認 agent 已載入，然後對 Claude 說：「從 Phase 0 開始討論」。
@@ -122,18 +124,39 @@ cp <this-repo>/workflow/*.md     .claude/workflow/
 
 | 檔案 | 用途 |
 |---|---|
-| [`commands/spec-change.md`](commands/spec-change.md) | `/spec-change`：Phase 0 不可跳步 checklist（MR 盤點 → 草案 → 影響掃描 → PM 拍板 → worktree → 寫入 → 稽核 → drift → diff 親核 → 總結），每步吐一行證據 |
+| [`commands/spec-change.md`](commands/spec-change.md) | `/spec-change`：Phase 0 十二步不可跳步 checklist（MR 盤點 → 工作項與草案 → 影響掃描 → 提案 → PM 拍板 → worktree → 寫入或延後 → 稽核 → drift → diff 親核 → 存量稽核 → 總結），每步吐一行證據 |
 | [`skills/verify/SKILL.md`](skills/verify/SKILL.md) | 照 `workflow/verification.md` 跑寫程式的驗證流程 |
 | [`skills/scenario-expansion/SKILL.md`](skills/scenario-expansion/SKILL.md) | 把需求展開成情境矩陣（HP/EC/ER、domain 盲點、Phase 0 邊界 12 問），餵 Phase 1 與 Phase 4 |
 | [`skills/task-breakdown/SKILL.md`](skills/task-breakdown/SKILL.md) | 把範圍已定的功能拆成垂直切片 to-do，每條帶 DoD、優先級與相依 |
 
 ```bash
 mkdir -p .claude/commands .claude/skills
-cp <this-repo>/commands/*.md .claude/commands/
-cp -R <this-repo>/skills/*   .claude/skills/
+cp <this-repo>/agent-workflow/commands/*.md .claude/commands/
+cp -R <this-repo>/agent-workflow/skills/*   .claude/skills/
 ```
 
-> 規則書提到的 `$CLAUDE_WORKSPACE` 指的是這個 repo 的位置；規則書提到的 `scripts/`（檢查腳本）尚未包含於此 repo（見 Roadmap）。
+> 規則書、指令與 skill 提到的 `$CLAUDE_WORKSPACE` 指的是這個資料夾（`agent-workflow/`）的位置；規則書提到的 `scripts/`（檢查腳本）尚未包含（見 Roadmap）；`recipes/` 底下的版本分支腳本則已包含。
+
+## 名詞表
+
+| 名詞 | 在本資料夾的意思 |
+|---|---|
+| Subagent | 定義在 `agents-setup/` 的 Claude Code agent；主線 session 呼叫它做單一工作，有自己的模型與工具 |
+| 規則書（rulebook） | `workflow/` 裡的一份檔案；某個 Phase 或跨階段規則怎麼運作的權威 |
+| SPEC | 專案 `Spec/` 底下的規格 `.md`；現行行為的唯一真相（`.docx` 只是輸出版） |
+| US-ID | User Story 編號，例如 `US-T1.1`；掃描器與 mockup（`data-spec`）靠它找出一次異動碰到哪些地方 |
+| HP / EC / ER | Happy Path 主流程／Edge Case 邊界情境／Error 錯誤情境：scenario-expansion 對每個動作必寫的三欄 |
+| P0 / P1 / P2 | 優先層級；用在待確認項時，P0＝沒有它無法建 DB 或啟動後端，P1＝特定功能無法完整運作，P2＝不影響核心開發 |
+| AC | 驗收條件（Acceptance Criteria）：SPEC 中 User Story 底下的子節；Phase 4 測試案例用 `ac:` 指向它 |
+| DoD | Definition of Done：一條 to-do 怎樣才算做完（task-breakdown） |
+| Path A / B | Phase 0 收版兩條路：A＝純文字微調，單一 commit；B＝要連動 mockup，feature branch 兩個 commit |
+| Drift | SPEC 寫入後，mockup 或流程圖跟 SPEC 對不上；由 mockup-drift-scanner 列清單給 PM 判斷 |
+| Vendoring | 把 `workflow/` 與 `agents-setup/` 複製進專案的 `.claude/`，讓專案自帶流程 |
+| MR | GitLab 的 merge request |
+| Milestone | 工作項所屬的發佈版本（例如 `v1.10.0`）；決定 SPEC 版本分支與 Phase 4 何時測 |
+| Worktree | 獨立的 git worktree；Phase 0 寫入一律在這裡做，不在主樹（`/spec-change` Step 6 是硬門） |
+| L0–L6 | 地基層：Vision、Scope、Entities、Permission、Process、UI、Tech；每層過 gate＝跑一次 Phase 0 |
+| 接縫（seam） | 地基軌轉入逐功能 Phase 0~8 的那一層；接縫之前不畫 mockup、不寫測試 |
 
 ## Roadmap
 

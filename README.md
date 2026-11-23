@@ -3,18 +3,24 @@
 **English** · [繁體中文](README.zh-TW.md)
 
 This repo collects the **architecture notes and design decisions** behind two internal systems I built with Claude through vibe coding while working as a PM at a tech company, plus the **spec-driven workflow (the method)** I use to work with Claude.
-- Internal Request Hub: I described the pain points and the spec I wanted; Claude handled the technical structure and the UI design.
 - Learning Platform: the company's HR acted as PM and owned the UI design and spec decisions. Claude and I built the site together and connected it to internal company services; Claude handled the technical structure.
+- Internal Request Hub: I described the pain points and the spec I wanted; Claude handled the technical structure and the UI design.
 - Agent Workflow: the way of working behind both systems. It covers spec discussion, sign-off, writing, auditing, testing and the user guide, and says which agent and which model handles each step.
 
 Because of confidentiality obligations, there is no source code or internal information here. All system names and integrations have been replaced with neutral names, and numbers have been blurred. Examples in the workflow are rewritten around a fictional to-do list app. The focus is on **how the systems are designed, why they are designed that way, and how engineering quality is kept**.
+
+## Where to start
+
+1. **This page**: what the two systems are and what my role was.
+2. **System design**: [`learning-platform/ARCHITECTURE.md`](learning-platform/ARCHITECTURE.md) and [`internal-request-hub/ARCHITECTURE.md`](internal-request-hub/ARCHITECTURE.md).
+3. **The method**: [`agent-workflow/README.md`](agent-workflow/README.md).
 
 ## Projects
 
 | Project | In one line | Stack | My role |
 |---|---|---|---|
-| [Learning Platform](learning-platform/) | Internal training platform (LMS) for a mid-to-large company | Laravel + Nuxt/Vue 3 + PostgreSQL + K8s | Backend lead, architecture, CI/CD, E2E test suite |
-| [Internal Request Hub](internal-request-hub/) | Tracks cross-team requests through their whole lifecycle, from wish to closure | FastAPI + htmx + SQLite | Sole owner of full stack, architecture, CI/CD and test strategy |
+| [Learning Platform](learning-platform/) | Internal training platform (LMS) for a mid-to-large company | Laravel + Nuxt/Vue 3 + PostgreSQL + K8s | Built it with Claude from HR's spec: integrated internal services, CI/CD, E2E test suite; Claude owned the technical structure |
+| [Internal Request Hub](internal-request-hub/) | Tracks cross-team requests through their whole lifecycle, from wish to closure | FastAPI + htmx + SQLite | PM: pain points, spec and acceptance; drove Claude through implementation, CI/CD and release; Claude owned the technical structure and UI design |
 | [Agent Workflow](agent-workflow/) | A spec-driven workflow for PMs designing systems from scratch with Claude Code: humans decide, AI drafts, writes and audits | Claude Code subagents (12) + rulebooks | Method design, agent definitions, process upkeep |
 
 Each system project folder has two documents (written in Traditional Chinese):
@@ -22,7 +28,17 @@ Each system project folder has two documents (written in Traditional Chinese):
 - **README.md**: what the system is for, the stack, and engineering highlights
 - **ARCHITECTURE.md**: architecture diagrams (Mermaid), data flow, and for each design decision, the problem and how it was solved
 
-`agent-workflow/` contains the workflow rulebooks (`workflow/`, in Traditional Chinese), 12 subagent definitions (`agents-setup/`), the `/spec-change` slash command (`commands/`), three skills (`skills/`), the SPEC version-branch recipe with its sync scripts and tests (`recipes/`), and a README in English and Chinese.
+`agent-workflow/` contains:
+
+| Folder | Contents | Count | Language |
+|---|---|---|---|
+| [`workflow/`](agent-workflow/workflow/) | Workflow rulebooks (entry routing, foundation track, Phases 0–8, cross-cutting rules) | 20 rulebooks + an index README | Traditional Chinese (index is bilingual) |
+| [`agents-setup/`](agent-workflow/agents-setup/) | Claude Code subagent definitions | 12 | Traditional Chinese |
+| [`commands/`](agent-workflow/commands/) | The `/spec-change` slash command | 1 | Traditional Chinese |
+| [`skills/`](agent-workflow/skills/) | Skills (verify, scenario-expansion, task-breakdown) | 3 | Traditional Chinese |
+| [`recipes/`](agent-workflow/recipes/) | SPEC version-branch recipe, with its sync scripts and tests | 1 recipe | Traditional Chinese |
+
+All documents, agents, commands and skills are written in **Traditional Chinese**; only the READMEs are bilingual (English and Chinese).
 
 ## Engineering principles shared by both systems
 
