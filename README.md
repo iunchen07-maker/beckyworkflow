@@ -22,7 +22,7 @@ Each system project folder has two documents (written in Traditional Chinese):
 - **README.md**: what the system is for, the stack, and engineering highlights
 - **ARCHITECTURE.md**: architecture diagrams (Mermaid), data flow, and for each design decision, the problem and how it was solved
 
-`agent-workflow/` contains the workflow rulebooks (`workflow/`, in Traditional Chinese), 12 subagent definitions (`agents-setup/`), and a README in English and Chinese.
+`agent-workflow/` contains the workflow rulebooks (`workflow/`, in Traditional Chinese), 12 subagent definitions (`agents-setup/`), the `/spec-change` slash command (`commands/`), three skills (`skills/`), the SPEC version-branch recipe with its sync scripts and tests (`recipes/`), and a README in English and Chinese.
 
 ## Engineering principles shared by both systems
 

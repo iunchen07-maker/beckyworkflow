@@ -42,7 +42,7 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
 ## 執行順序
 
 ```
-① PM 提出需求 / 修改想法（對話）；**先記工作項**（issue 全路徑＋milestone，見 §SPEC 生命週期 4）
+① PM 提出需求 / 修改想法（對話）；**先記工作項**（issue 全路徑＋milestone，見 §SPEC 生命週期 4；宣告版本分支的專案另驗 milestone 有效，見 7）
       ↓
 ② Claude（Opus）和 PM 一問一答，推敲設計方案 → 產出**定案草案**
       ↓
@@ -105,7 +105,7 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
      - **Path A — 純文字微調**（drift 報告中無「必審」「dangling 必修」項，或 PM 判斷規則改動不影響 UI / 流程） → 直接走 ⑪a
      - **Path B — 要動 mockup**（drift 報告有「必審」項且 PM 判斷 UI / 流程要連動，或有「dangling 必修」項，或 PM 決定排 Phase 1 補畫新增 US 的 mockup） → 走 ⑪b
       ↓
-⑪ 兩條 Path 的每個 commit message 都引用本批工作項全路徑（一個 commit 一個工作項），並帶 `Verified-by:` trailer（§SPEC 生命週期 6）
+⑪ 兩條 Path 的每個 commit message 都引用本批工作項全路徑（一個 commit 一個工作項），並帶 `Verified-by:` trailer（§SPEC 生命週期 6）；宣告版本分支的專案 push `main` 後確認 `spec-branch-sync` 綠（§SPEC 生命週期 7）
 
 ⑪a **Path A — 純文字 commit**：個案 Phase 0 的所有改動（SPEC md + Project_Context + Decision_Principles + memory + README）都在**同一個專案 repo**，單一 repo commit 即收齊；push 前確認 working tree 乾淨。main 是 protected branch，只能 fast-forward
       ↓ 跳 ⑫
@@ -133,8 +133,8 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
 
 **核心：PM 拍板的是「本節寫哪些情境（scope）」，不是逐句措辭；嚴格前控範圍、不「先寫多再刪」（長全新 SPEC（greenfield）量產時尤其必守）。**
 
-- 草案分兩欄：`已拍板要寫的` vs `候選衍生情境（edge / error / 防呆 / 邊界）`；候選**逐條**標【建議寫 / 建議跳過】＋一句理由，**預設從嚴、偏少**（scenario-expansion skill〔未包含於此 repo〕的情境矩陣＝候選菜單，不是全部要寫）。
-- `候選衍生情境` 欄必須逐題走過「邊界情境檢查清單」產生（每題有情境或確認不適用；清單由專案自訂，scenario-expansion skill 未包含於此 repo），不得只列 Opus 想到的。
+- 草案分兩欄：`已拍板要寫的` vs `候選衍生情境（edge / error / 防呆 / 邊界）`；候選**逐條**標【建議寫 / 建議跳過】＋一句理由，**預設從嚴、偏少**（[scenario-expansion](../skills/scenario-expansion/SKILL.md) skill 的情境矩陣＝候選菜單，不是全部要寫）。
+- `候選衍生情境` 欄必須逐題走過「邊界情境檢查清單」產生（每題有情境或確認不適用；預設用 scenario-expansion skill §4.5「Phase 0 邊界 12 問」，專案可自訂），不得只列 Opus 想到的。
 - PM 勾 scope → spec-writer(⑨) 只寫勾的；**衍生 error / 防呆 / 邊界一律 opt-in、拍板後才寫**——不投機、不加戲。scope 定了、節內 Opus 照寫、不逐行煩 PM。
 
 > 這道 gate 落在執行順序的 **⑥ PM 拍板**：拍板同時確認 scope（要寫哪些情境）。
@@ -172,13 +172,23 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
    - **切換前的舊決策史**凍結在 `Spec/memory/legacy/*.md`（舊條目一條一列、可 grep、不進產生的視圖）；不另建 stub 決策檔。
    - **查詢**：依 SPEC 檔產生 `Spec/memory/index/<檔名>.md`（以 `changes` 的 §ID 歸列，腳本產生、**不手改**）＋專案 `CLAUDE.md` 宣告的 CLI（如 `decisions why <§ID>`）；agent 先 grep frontmatter。不做全域單一索引、不做依日期視圖。
    - 檔頭 `last_updated` 只放日期、不寫歷史。
-4. **每個 SPEC／mockup commit 只引用一個工作項**，寫全路徑（路徑格式見專案 `CLAUDE.md` 的 `工作項路徑格式：<group>/<project>#NNN`；本模型適用所有專案、不設 opt-in，專案缺這行 → writer／deferrer 停下並提示補上）；milestone 掛在 issue 上。專案 CI（若有）擋沒引用的 SPEC commit。「milestone X 改了什麼」＝引用 X 底下 issue 的 commit。
+4. **每個 SPEC／mockup commit 只引用一個工作項**，寫全路徑（路徑格式見專案 `CLAUDE.md` 的 `工作項路徑格式：<group>/<project>#NNN`；本模型適用所有專案、不設 opt-in，專案缺這行 → writer／deferrer 停下並提示補上）；milestone 掛在 issue 上（milestone＝code 版本號；SPEC 正文與 commit 訊息不寫版本字樣，要改歸屬就改 issue 的 milestone）。專案 CI（若有）擋沒引用的 SPEC commit。「milestone X 改了什麼」＝引用 X 底下 issue 的 commit；「milestone X 的完整行為」＝`main` 扣掉工作項屬於比 X 更晚 milestone 的 commit 之後的 SPEC——宣告版本分支的專案就是 `spec/vX.Y.Z` 的內容（見 7）。
 5. **交棒給工程的格式**（如 milestone 異動摘要）依各團隊慣例而定，不在本工作流範圍內（見下方 ⑤）；若團隊要產出，從工作項＋決策檔產生，不另手寫一份。
 6. **驗證關卡**：
    - (a) **每個 SPEC／mockup commit 都過 verifier**，commit 訊息帶 trailer `Verified-by: <agent 或人名>`；主流程不得繞過 verifier 直接改 SPEC（含在別的 issue 的 worktree 順手改）。
    - (b) verifier 語意檢查涵蓋**每個改動 hunk**（含刪除與改寫），專案有限定詞守門工具（未包含於此 repo）就跑；lint 由 verifier 親自跑，不採信派工 prompt 的「lint 已 0」。
    - (c) **存量清理／遷移**（全庫套新規則、搬體例）只能由**獨立稽核 agent** 宣告完成——不是該批 writer、也不是該批 verifier；派工 prompt 不給「lint 已 0」前提、不預先核准例外，稽核讀整段受影響正文，不只 lint 命中行。lint 0 是必要條件，不是完成定義。
    - (d) 平行 writer 各寫自己的 report（`.claude/spec-write-report.<group>.json`），不共用一份。
+7. **版本分支（`spec/vX.Y.Z`）**：專案 `CLAUDE.md` 必須有一行宣告——`版本分支同步：有（spec-branch-sync）` 或 `版本分支同步：無（本專案無 milestone 版本）`；宣告「無」只守 4、5。安裝與操作步驟見配方 [`../recipes/spec-version-branches.md`](../recipes/spec-version-branches.md)（同步工具在 [`../recipes/spec-version-branches/`](../recipes/spec-version-branches/)；專案沒裝 → 回報「未安裝」，不自己補做法）。宣告「有」的專案守以下規則：
+   - **SPEC 只寫在 `main`**，`main` 可同時放好幾版的行為；版本歸屬只看 commit 引用的工作項**現在**的 milestone。
+   - **每個開發中的 milestone 一條 `spec/vX.Y.Z`**：milestone 開工時從當下 `main` 開（⓪）；RD／QA 讀這條。**永不 merge 回 `main`**；除了解同步衝突與撤回，不手改。
+   - **同步**（CI `spec-branch-sync`，每次 push `main`）：從分支點起依 `main` 順序 `cherry-pick -x` 每個 commit，**除非**它的工作項現在的 milestone 晚於該分支；沒引用工作項、milestone 不是版本號（如 Backlog）的照挑。衝突 → 停在那一筆、job 紅、通知團隊頻道，人在分支上解完才繼續（不跳過它挑後面的）；手挑一律帶 `-x`。分支上被 revert 的 commit，工作項改回不晚於本版時會被重挑。最終內容跟著每個工作項**現在**的 milestone 走。
+   - **每日檢查**（排程 `spec-branch-check`）：報「缺」（該挑沒挑）與「多」（挑了，但工作項已改到更晚的 milestone），只報不修；撤不撤由人決定。
+   - **工作項不需改 SPEC**：在 issue 留一行固定字樣 `SPEC 不用改，§X 已經這樣寫`（X＝現行條文的 §ID）。release 檢查機器比對這行，字樣不得改寫。
+   - **SPEC 改動的 commit 沒引用這個工作項**（改在別張票，或帶票規則以前的舊 commit）：在 issue 留一行 `SPEC 變更：commit <sha>`（同行可列多個 sha），release 檢查認 sha 在分支上、沒被撤。
+   - **Release**（⑤a）：跑 `spec_sync.py release-check vX.Y.Z`；通過才打 `spec/vX.Y.Z-release` tag，打了 tag 的分支＝關閉（不再同步、不再檢查）；不通過 → 清單給 PM，由 PM 決定。
+   - **工作項 milestone 必須有效**：開著的 `spec/vX.Y.Z`、還沒開分支的未來版本號，或非版本號（如 Backlog）；打錯字的 milestone 會被歸到錯的版本，或被當成非版本號、挑進每一條分支。
+   - **過渡**：專案開始要求每個 commit 引用工作項之前的 commit 不追溯（不判歸屬、不報缺）。
 
 ---
 
@@ -192,6 +202,8 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
 - 清理動作走一張工作項＋決策檔
 
 > 維護模式（逐項改）不需要這步；只在 milestone 批次開工時做。
+
+**開版本分支（宣告 `版本分支同步：有` 的專案；不分批次／維護模式，每個 milestone 開工都做）**：從當下 `main` 開 `spec/vX.Y.Z`——`git push origin origin/main:refs/heads/spec/vX.Y.Z`（規則見 §SPEC 生命週期 7）。要先清理的，清理 commit 進 `main` 之後再開。
 
 ---
 
@@ -271,6 +283,15 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
 ### ⑤ 交棒給工程
 
 SPEC 定案後交給工程的方式（交棒格式、待決事項追蹤）依各團隊慣例而定，不在本工作流範圍內。
+
+---
+
+### ⑤a milestone release：release-check → tag（宣告 `版本分支同步：有` 的專案）
+
+milestone 上線前：
+1. 本機跑 `python3 ci/spec_sync.py release-check vX.Y.Z`，它查四件事：① 分支與同步結果一致（沒有缺、沒有多）② milestone 下每個工作項（含已關閉）有引用它的 commit 從分支最新 commit 往回找得到（含分支點以前的，扣掉分支上撤掉的），或 issue 描述／留言有 `SPEC 變更：commit <sha>`（sha 在分支上、沒被撤）或 `SPEC 不用改，§X 已經這樣寫` 那行 ③ 分支上沒有更晚 milestone 的東西 ④ 列出沒引用工作項的 commit（參考，不擋）。
+2. 通過 → `python3 ci/spec_sync.py release-check vX.Y.Z --tag`：全過才在分支最新 commit 打 `spec/vX.Y.Z-release` 並推；分支從此關閉。
+3. 不通過 → 清單原樣給 PM，由 PM 決定補、撤或照樣放行；Claude 不自己改分支、不自己打 tag。
 
 ---
 

@@ -10,6 +10,9 @@ feeds_into:
 also_see: workflow/CONTRACTS.md（Contract C）
 ---
 
+> 🔍 **驗證總則**：跑測試與看截圖照 [`verification.md`](verification.md)——不穩的測試不准靠重跑變綠、截圖用一般視窗大小且要有人對照預期看過、漏網 bug 變規則。
+
+
 # Phase 6｜自動測試 → Bug 修復迴圈
 
 ---

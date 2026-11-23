@@ -5,7 +5,7 @@
 > 一套給 PM 用 Claude Code「從零到有設計一個系統」的 spec-driven 工作流：
 > **人決策、AI 執行與稽核**，並依任務難度分配模型等級。
 
-這個 repo 收錄的是**方法論本身**：工作流規則書（`workflow/`）與 12 個 Claude Code subagent 定義（`agents-setup/`）。
+這個 repo 收錄的是**方法論本身**：工作流規則書（`workflow/`）與 12 個 Claude Code subagent 定義（`agents-setup/`），另附 1 個 slash command（`commands/`）與 3 個 skill（`skills/`）。
 目前是展示版（v0.1）：專案 template、起手腳本與輔助檢查腳本尚未包含，規則書中提到的腳本請視為設計說明。
 
 ---
@@ -73,6 +73,8 @@
 
 **SPEC 生命週期**：正文只寫現行行為；每次異動都新增一份決策檔（結論、Why、否決的方案、推翻了什麼），並綁定工作項；延後的功能搬進 `Spec/Deferred/`，不留在正文。既有編號永不重編，退役或延後的編號保留不重用。見 [`workflow/phase-0-spec-update.md`](workflow/phase-0-spec-update.md) §SPEC 生命週期。
 
+**SPEC 版本分支**：SPEC 一律寫在 `main`，但 `main` 常同時放好幾版的行為。宣告啟用的專案，每個開發中的 milestone 一條 `spec/vX.Y.Z` 分支，CI 依工作項的 milestone 把 `main` 的 commit 挑進該挑的分支；RD／QA 讀分支就拿到「這版完整的行為」，release 打 tag 後凍結。規則見 §SPEC 生命週期 7，安裝與操作見新的 `recipes/` 資料夾：[`recipes/spec-version-branches.md`](recipes/spec-version-branches.md)（同步腳本、測試與 CI 片段在 [`recipes/spec-version-branches/`](recipes/spec-version-branches/)）。
+
 ## 12 個 agents
 
 | Agent | Phase | 角色 | Model |
@@ -102,6 +104,8 @@ Phase 7 是人工抽測，由 PM 自己跑。Phase 3（Mockup）已併入 Phase 
 | [`phase-1-product-design.md`](workflow/phase-1-product-design.md) ～ [`phase-8-userguide.md`](workflow/phase-8-userguide.md) | 軸 C 各階段 |
 | [`CONTRACTS.md`](workflow/CONTRACTS.md) · [`SPEC_NUMBERING_RULES.md`](workflow/SPEC_NUMBERING_RULES.md) · [`CROSSLINK_REGEN.md`](workflow/CROSSLINK_REGEN.md) · [`GUIDE_SECTIONS.md`](workflow/GUIDE_SECTIONS.md) | 交棒契約、編號、交叉連結、Guide 章節 |
 | [`file-discipline.md`](workflow/file-discipline.md) · [`discussion-docs.md`](workflow/discussion-docs.md) | 防檔案增生、討論文件紀律 |
+| [`verification.md`](workflow/verification.md) | 寫程式的驗證流程：劇本非實作者先寫、實作方不得改檢查、漏網 bug 變規則 |
+| [`recipes/spec-version-branches.md`](recipes/spec-version-branches.md) | 配方：SPEC 版本分支＋CI 自動同步 |
 
 ## 試用方式（手動）
 
@@ -113,6 +117,21 @@ cp <this-repo>/workflow/*.md     .claude/workflow/
 ```
 
 接著在 Claude Code 裡輸入 `/agents` 確認 agent 已載入，然後對 Claude 說：「從 Phase 0 開始討論」。
+
+### Slash command 與 skills
+
+| 檔案 | 用途 |
+|---|---|
+| [`commands/spec-change.md`](commands/spec-change.md) | `/spec-change`：Phase 0 不可跳步 checklist（MR 盤點 → 草案 → 影響掃描 → PM 拍板 → worktree → 寫入 → 稽核 → drift → diff 親核 → 總結），每步吐一行證據 |
+| [`skills/verify/SKILL.md`](skills/verify/SKILL.md) | 照 `workflow/verification.md` 跑寫程式的驗證流程 |
+| [`skills/scenario-expansion/SKILL.md`](skills/scenario-expansion/SKILL.md) | 把需求展開成情境矩陣（HP/EC/ER、domain 盲點、Phase 0 邊界 12 問），餵 Phase 1 與 Phase 4 |
+| [`skills/task-breakdown/SKILL.md`](skills/task-breakdown/SKILL.md) | 把範圍已定的功能拆成垂直切片 to-do，每條帶 DoD、優先級與相依 |
+
+```bash
+mkdir -p .claude/commands .claude/skills
+cp <this-repo>/commands/*.md .claude/commands/
+cp -R <this-repo>/skills/*   .claude/skills/
+```
 
 > 規則書提到的 `$CLAUDE_WORKSPACE` 指的是這個 repo 的位置；規則書提到的 `scripts/`（檢查腳本）尚未包含於此 repo（見 Roadmap）。
 

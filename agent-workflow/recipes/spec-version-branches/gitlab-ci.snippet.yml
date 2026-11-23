@@ -1,0 +1,67 @@
+# ── SPEC 分版同步（ci/spec_sync.py；正本 recipes/spec-version-branches/）──
+# 貼進專案 .gitlab-ci.yml。前提：stages 裡有 `sync`（沒有就加，或把 stage 改成既有的）。
+#
+# main 每次 push：每條開著的 spec/vX.Y.Z 從分支點重算待挑、依序 cherry-pick -x（已挑過、已在分支上
+# revert 的不挑；有 spec/vX.Y.Z-release tag＝已關閉，不碰）；issue 屬於比分支更晚 milestone 的跳過。
+# 衝突 → 該分支不推、job 紅、通知團隊頻道，人工解。GitLab API 失敗 → job 紅、什麼都不推。
+# 防迴圈：sync 只在 main 的 push 跑；推到 spec/* 觸發的 pipeline 不會再同步。
+#
+# 需要的 CI/CD 變數：
+#   SPEC_SYNC_PUSH_TOKEN    Masked，Project Access Token（Developer）：write_repository，推 spec/* 分支與
+#                           release tag。沒設 SPEC_SYNC_API_TOKEN 時也拿來讀 milestone，這時還要 read_api＋
+#                           能讀 issue 專案。
+#   SPEC_SYNC_API_TOKEN     （建議）issue 在別的專案時另設，read_api、能讀 issue 專案即可
+#   SPEC_SYNC_WEBHOOK       Masked，聊天工具的 incoming webhook（沒設＝只印在 log；
+#                           變數名可在 ci/spec_branches_config.py 的 WEBHOOK_ENV 改）
+#   spec/* 若設成 protected branch／protected tag，要允許該 token 的 bot 推。
+#
+# 排程：Pipeline schedules 建一個「spec-branch-check daily」，變數 SPEC_BRANCH_CHECK=1。
+#
+# ⚠ 其他 job 要配合的排除（各專案自己加在既有 job 的 rules 最前面）：
+#   1) 部署類 job（例：把稿 mirror 到固定網址的 deploy）不要在版本分支跑，否則 sync 推分支時
+#      會用分支內容蓋掉 main 剛部署的：
+#        - if: '$CI_COMMIT_BRANCH =~ /^spec\/v/'
+#          when: never
+#   2) 其他排程 job 不要搭每日 check 排程的便車（check 排程帶 SPEC_BRANCH_CHECK=1）：
+#        - if: '$SPEC_BRANCH_CHECK == "1"'
+#          when: never
+#
+# 上線檢查（release-check）不放 CI：PM 要關版時本機跑
+#   python3 ci/spec_sync.py release-check vX.Y.Z          # 只檢查
+#   python3 ci/spec_sync.py release-check vX.Y.Z --tag    # 全過才打 spec/vX.Y.Z-release 並推
+# （需 SPEC_SYNC_API_URL／SPEC_SYNC_API_TOKEN；要放 CI 就仿 spec-branch-check 加一個 when: manual 的 job，
+#   script 換成上面那行、用變數帶版本號。）
+
+.spec-sync-base: &spec-sync-base
+  image: python:3.12-slim
+  stage: sync
+  needs: []
+  variables:
+    GIT_STRATEGY: clone
+    GIT_DEPTH: "0"                       # 要找 merge-base、讀分支上的 -x trailer
+    PYTHONUTF8: "1"
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends git
+    - git config --global --add safe.directory "$(pwd)" 2>/dev/null || true
+    - git config user.name  "spec-sync-bot"
+    - git config user.email "spec-sync-bot@localhost"   # 換成專案慣用的 bot 信箱
+
+spec-branch-sync:
+  <<: *spec-sync-base
+  resource_group: spec-branch-sync       # 連續 push 依序同步，不互踩分支
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  script:
+    # 不看這次 push 帶了哪些 commit：每條分支都從分支點重算整份待挑清單、依序挑；
+    # 前一次衝突沒解，這次照樣停在同一筆（不會跳過它挑後面的）
+    - python3 ci/spec_sync.py --notify sync --push
+
+# 每日排程：每條開著的 spec 分支 vs 依「目前」milestone 應有的 commit，報缺與多；只報不修。
+# 一致時安靜（不通知）；有落差 exit 2 → 紅燈＋通知。手動看：Run pipeline 帶 SPEC_BRANCH_CHECK=1。
+spec-branch-check:
+  <<: *spec-sync-base
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$SPEC_BRANCH_CHECK == "1"'
+  script:
+    - python3 ci/spec_sync.py --notify check

@@ -22,7 +22,7 @@
 - **README.md** — 系統定位、技術棧、工程亮點摘要
 - **ARCHITECTURE.md** — 架構圖（Mermaid）、資料流、每個設計決策的「遇到什麼問題 → 怎麼解」
 
-`agent-workflow/` 內有工作流規則書（`workflow/`）、12 個 subagent 定義（`agents-setup/`）和中英文 README。
+`agent-workflow/` 內有工作流規則書（`workflow/`）、12 個 subagent 定義（`agents-setup/`）、`/spec-change` 指令（`commands/`）、3 個 skill（`skills/`）、SPEC 版本分支配方與同步腳本＋測試（`recipes/`），以及中英文 README。
 
 ## 兩套系統的共同工程理念
 

@@ -127,7 +127,7 @@ also_see: workflow/CONTRACTS.md（產出物一覽）
 **接縫層 = 地基軌轉入逐功能 Phase 0~8 的那一層。** 接縫之前（含）是地基期、逐層 gate、零工序；接縫之後每個功能各自走一輪 Phase 0~8。
 
 - **各專案在自己的 `Spec/Progress_Tracker.md` 頂部宣告接縫層**（哪一層之後轉逐功能）。這是新專案開軌時**要問 PM 一次、寫進 Tracker 頂部**的決定（與 §6 的「地基層重開」同屬 PM 議程權，不由 Claude 自決）。
-- **例：接縫 = L3 之後**：地基（L0–L3）鎖定後，從 L4 Process 起逐功能走 vendored Phase 0~8（task-breakdown 拆 to-do → scenario-expansion 展情境〔兩個 skill 未包含於此 repo〕→ Phase 0 寫 SPEC → Phase 1 mockup → …）。
+- **例：接縫 = L3 之後**：地基（L0–L3）鎖定後，從 L4 Process 起逐功能走 vendored Phase 0~8（[task-breakdown](../skills/task-breakdown/SKILL.md) 拆 to-do → [scenario-expansion](../skills/scenario-expansion/SKILL.md) 展情境 → Phase 0 寫 SPEC → Phase 1 mockup → …）。
 - 接縫層放哪由專案性質決定（entity/權限重的系統多半放 L3 後；流程輕的可能更早）——**沒有通用固定值**，開軌時 PM 拍。
 
 ---

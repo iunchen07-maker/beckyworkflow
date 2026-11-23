@@ -11,6 +11,9 @@ feeds_into:
 also_see: workflow/CONTRACTS.md（Contract B）
 ---
 
+> 🔍 **驗證總則**：本 Phase 的產物要符合 [`verification.md`](verification.md)——驗收腳本由非實作者先寫、實作方不得修改、誤判走留紀錄的跳過。
+
+
 # Phase 4｜驗收腳本
 
 > **Claude 的工作：** 讀取 Phase 1 的 User Story（已含 data-action 標注），直接生成可執行的 YAML 驗收腳本
@@ -40,7 +43,7 @@ Phase 1 的 `dev-spec/product-spec.md` 裡，每個互動步驟已標注 `[data-
 
 兩個規則：
 - **oracle 與情境分開設計**：先想「這個情境要驗什麼業務結果」，再想操作步驟。斷言對準業務結果（例：「任務移到『已完成』區」），不寫實作細節（例：不寫「DB 某欄位=1」）。
-- 上游已跑過 scenario-expansion skill（未包含於此 repo）的情境矩陣時，**直接沿用當 matrix 底稿**，不重做。
+- 上游已跑過 [scenario-expansion](../skills/scenario-expansion/SKILL.md) skill 的情境矩陣時，**直接沿用當 matrix 底稿**，不重做。
 
 ### 2. 五個技法速查表
 
