@@ -34,14 +34,49 @@
 
 工作流不是單一線性順序，而是三條軸互相「呼叫」：
 
+```mermaid
+flowchart TB
+    REQ(["新需求／修改想法"]) --> ROUTE{"入口路由"}
+    ROUTE -->|"新專案，或地基層未鎖"| A
+    ROUTE -->|"改既有規格"| B
+    subgraph A["軸 A｜地基軌（每專案一次）"]
+        direction LR
+        L03["L0 Vision<br/>L1 Scope<br/>L2 Entities<br/>L3 Permission"]:::opus --> SEAM{{"接縫"}} --> L46["L4 Process<br/>L5 UI<br/>L6 Tech"]:::opus
+    end
+    A -->|"每層過 gate 呼叫一次；接縫後逐功能呼叫"| B
+    subgraph B["軸 B｜Phase 0 寫入引擎"]
+        direction LR
+        DISC["討論、訂草案<br/>Opus＋PM"]:::opus --> SCAN["impact-scanner<br/>掃全 SPEC 連動"]:::opus --> OK{"PM 拍板"}:::pm
+        OK -->|"現在做"| WRITE["spec-writer<br/>只抄定案"]:::sonnet
+        OK -->|"延後／接回"| DEFER["spec-deferrer<br/>逐字搬出／接回"]:::opus
+        WRITE --> VER["spec-verifier<br/>獨立稽核"]:::opus
+        DEFER --> VER
+        VER --> DRIFT["drift-scanner<br/>比對 mockup"]:::sonnet --> CLOSE["PM 收版<br/>Path A／B"]:::pm
+    end
+    B -->|"commit / push"| CI
+    subgraph CI["CI（選裝）"]
+        direction LR
+        MAIN[("main")]:::auto --> GATES["SPEC 品質閘門"]:::auto
+        MAIN --> VB["版本分支<br/>spec/vX.Y.Z"]:::auto
+    end
+    B -->|"逐功能；只跑上游已變的部分"| C
+    subgraph C["軸 C｜Phase 1–8 產出工序"]
+        direction LR
+        P1["1 mockup<br/>User Story"]:::sonnet --> P2["2 技術規格"]:::sonnet --> P25["2.5 待確認項"]:::haiku --> P5["5 實作"]:::sonnet
+        P2 --> P5
+        P1 --> P4["4 驗收腳本"]:::sonnet --> P6["6 自動測試"]:::sonnet
+        P5 --> P6
+        P6 -->|bug| P5
+        P6 --> P7["7 PM 抽測"]:::pm --> P8["8 User Guide"]:::sonnet
+    end
+    classDef opus fill:lightskyblue,stroke:steelblue,color:black
+    classDef sonnet fill:lightgreen,stroke:seagreen,color:black
+    classDef haiku fill:gold,stroke:goldenrod,color:black
+    classDef pm fill:pink,stroke:palevioletred,color:black
+    classDef auto fill:lightgray,stroke:gray,color:black
 ```
-軸 A 地基軌（每專案一次）   L0 Vision → L1 Scope → L2 Entities → L3 Permission →〔接縫〕→ L4 Process → L5 UI → L6 Tech
-                                   │ 每層 gate 呼叫一次 ↓                 接縫後逐功能各呼叫一次 ↓
-軸 B Phase 0（決策寫入引擎）  討論 → impact-scan → PM 拍板 → write → verify → drift → 收版 Path A/B
-                                   │ 逐功能回呼 ↓
-軸 C Phase 1~8              mockup → tech-spec → 測試腳本 → 實作 → 自動測試 → 人工抽測 → User Guide
-                              只跑「上游已變」的子集
-```
+
+顏色：🔵 藍＝Opus（含與 PM 一起訂）｜🟢 綠＝Sonnet｜🟡 黃＝Haiku｜🩷 粉＝PM｜灰＝CI 自動跑（不呼叫 LLM）。延後的功能經 spec-deferrer 搬移。
 
 - **軸 A｜地基軌**：逐層拍板 Vision、Scope、Entities（含 Glossary＝唯一名詞來源）、Permission、Process、UI、Tech。每層過 gate＝跑一次 Phase 0。見 [`workflow/foundation-track.md`](workflow/foundation-track.md)。
 - **軸 B｜Phase 0 決策寫入引擎**：所有規格異動都走這裡。見 [`workflow/phase-0-spec-update.md`](workflow/phase-0-spec-update.md)。

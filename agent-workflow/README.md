@@ -23,14 +23,49 @@ This is a showcase release (v0.1). The project template, bootstrap script and so
 
 ## Three axes
 
+```mermaid
+flowchart TB
+    REQ(["New request / change idea"]) --> ROUTE{"Entry routing"}
+    ROUTE -->|"new project, or foundation not locked"| A
+    ROUTE -->|"change to an existing spec"| B
+    subgraph A["Axis A | Foundation track"]
+        direction LR
+        L03["L0 Vision<br/>L1 Scope<br/>L2 Entities<br/>L3 Permission"]:::opus --> SEAM{{"seam"}} --> L46["L4 Process<br/>L5 UI<br/>L6 Tech"]:::opus
+    end
+    A -->|"one call per layer gate; per feature after the seam"| B
+    subgraph B["Axis B | Phase 0 engine"]
+        direction LR
+        DISC["Discuss, draft<br/>Opus + PM"]:::opus --> SCAN["impact-scanner<br/>scan whole spec"]:::opus --> OK{"PM sign-off"}:::pm
+        OK -->|"do now"| WRITE["spec-writer<br/>transcribe only"]:::sonnet
+        OK -->|"postpone / restore"| DEFER["spec-deferrer<br/>move out / restore"]:::opus
+        WRITE --> VER["spec-verifier<br/>independent audit"]:::opus
+        DEFER --> VER
+        VER --> DRIFT["drift-scanner<br/>check mockups"]:::sonnet --> CLOSE["PM closes<br/>Path A / B"]:::pm
+    end
+    B -->|"commit / push"| CI
+    subgraph CI["CI (opt-in)"]
+        direction LR
+        MAIN[("main")]:::auto --> GATES["SPEC CI gates"]:::auto
+        MAIN --> VB["version branches<br/>spec/vX.Y.Z"]:::auto
+    end
+    B -->|"per feature; only what changed upstream"| C
+    subgraph C["Axis C | Phases 1–8"]
+        direction LR
+        P1["1 mockup<br/>user stories"]:::sonnet --> P2["2 tech spec"]:::sonnet --> P25["2.5 open items"]:::haiku --> P5["5 build"]:::sonnet
+        P2 --> P5
+        P1 --> P4["4 test scripts"]:::sonnet --> P6["6 autotest"]:::sonnet
+        P5 --> P6
+        P6 -->|bug| P5
+        P6 --> P7["7 PM manual check"]:::pm --> P8["8 user guide"]:::sonnet
+    end
+    classDef opus fill:lightskyblue,stroke:steelblue,color:black
+    classDef sonnet fill:lightgreen,stroke:seagreen,color:black
+    classDef haiku fill:gold,stroke:goldenrod,color:black
+    classDef pm fill:pink,stroke:palevioletred,color:black
+    classDef auto fill:lightgray,stroke:gray,color:black
 ```
-Axis A  Foundation track (once per project)  L0 Vision → L1 Scope → L2 Entities → L3 Permission → [seam] → L4 Process → L5 UI → L6 Tech
-                                                    │ each layer's gate calls Axis B
-Axis B  Phase 0 decision-write engine        discuss → impact-scan → PM sign-off → write → verify → drift → commit (Path A/B)
-                                                    │ per-feature callbacks
-Axis C  Phases 1–8                           mockup → tech spec → test scripts → build → autotest → manual check → user guide
-                                             only the subset whose upstream changed
-```
+
+Colors: 🔵 blue = Opus (decisions made together with the PM) | 🟢 green = Sonnet | 🟡 yellow = Haiku | 🩷 pink = PM | gray = CI (no LLM calls).
 
 - **Axis A, foundation track**: decide Vision, Scope, Entities (including the Glossary, the single source of terms), Permission, Process, UI and Tech layer by layer. Passing each layer's gate means one Phase 0 run. See [`workflow/foundation-track.md`](workflow/foundation-track.md).
 - **Axis B, Phase 0 decision-write engine**: every spec change goes through here. See [`workflow/phase-0-spec-update.md`](workflow/phase-0-spec-update.md).
