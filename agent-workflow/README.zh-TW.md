@@ -77,6 +77,8 @@
 
 **SPEC 品質閘門**：九項確定性 CI 檢查（禁用名詞、正文字樣、限定詞、編號、通知信、mockup、commit 工作項、決策檔 schema 與檢視），純 Python、不呼叫 LLM。見 [`recipes/spec-ci-gates.md`](recipes/spec-ci-gates.md)。
 
+**寫程式的驗證流程**：改到程式碼的工作都照 [`workflow/verification.md`](workflow/verification.md)：驗收劇本由非實作者先寫、實作方不得修改、漏網的 bug 變成規則。
+
 ## 12 個 agents
 
 | Agent | Phase | 角色 | Model |
