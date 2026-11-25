@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPEC 版本分支 script 同步自檢（免 AI、零 token、唯讀）——
 #   比對正本（本腳本所在的 recipes/spec-version-branches/）與專案 <repo>/ci/ 裡安裝的副本：
-#   spec_at.py、spec_sync.py、test/test_spec_at.py、test/test_spec_sync.py
+#   spec_at.py、spec_sync.py、test/test_spec_at.py、test/test_spec_sync.py、test/test_release_spec_change_mark.py
 #   （ci/spec_branches_config.py 是專案自己的設定，不比對）
 #
 # 用法: recipes/spec-version-branches/check-spec-branches-sync.sh <repo>
@@ -22,7 +22,8 @@ name="$(basename "$REPO")"
 PAIRS="spec_at.py:ci/spec_at.py
 spec_sync.py:ci/spec_sync.py
 test/test_spec_at.py:ci/test/test_spec_at.py
-test/test_spec_sync.py:ci/test/test_spec_sync.py"
+test/test_spec_sync.py:ci/test/test_spec_sync.py
+test/test_release_spec_change_mark.py:ci/test/test_release_spec_change_mark.py"
 
 if [ ! -f "$REPO/ci/spec_at.py" ] && [ ! -f "$REPO/ci/spec_sync.py" ]; then
   echo "· $name：未安裝 SPEC 版本分支 script（ci/spec_at.py、ci/spec_sync.py 都沒有）"

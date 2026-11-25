@@ -5,8 +5,8 @@
 > A spec-driven workflow for product managers who design systems from scratch with Claude Code.
 > **Humans decide; AI drafts, writes and audits.** Each step runs on the model tier that fits the job.
 
-This folder (`agent-workflow/`) holds the **method itself**: the workflow rulebooks (`workflow/`) and 12 Claude Code subagent definitions (`agents-setup/`), plus one slash command (`commands/`), three skills (`skills/`) and one recipe (`recipes/`: SPEC version branches, with its sync scripts and tests). All rulebooks, agents, the command, the skills and the recipe are written in Traditional Chinese; only the READMEs are bilingual. Start with the rulebook index: [`workflow/README.md`](workflow/README.md).
-This is a showcase release (v0.1). The project template, bootstrap script and helper check scripts are not included yet. Where the rulebooks mention those scripts, read them as design notes.
+This folder (`agent-workflow/`) holds the **method itself**: the workflow rulebooks (`workflow/`) and 12 Claude Code subagent definitions (`agents-setup/`), plus one slash command (`commands/`), three skills (`skills/`) and two recipes (`recipes/`: SPEC version branches and SPEC CI gates, each with scripts and tests). All rulebooks, agents, the command, the skills and the recipes are written in Traditional Chinese; only the READMEs are bilingual. Start with the rulebook index: [`workflow/README.md`](workflow/README.md).
+This is a showcase release (v0.1). The project template, bootstrap script and some helper scripts are not included yet; where a rulebook marks a script 未包含於此 repo (not in this repo), read it as a design note. The SPEC CI checks are included under `recipes/`.
 
 ## Core ideas
 
@@ -54,6 +54,7 @@ Axis C  Phases 1–8                           mockup → tech spec → test scr
 - **Phase 0 checks.** The writer refuses to write without a scan result and emits a JSON self-report; the verifier never trusts that self-report without re-checking it.
 - **Spec lifecycle.** The spec body describes only current behavior. Every change adds a decision record (why, rejected options, what it overturned) linked to a work item. A feature that gets postponed moves verbatim to `Spec/Deferred/`, with a restore list that lets it be put back later. Existing section numbers are never renumbered; retired or deferred numbers stay reserved. See [`workflow/phase-0-spec-update.md`](workflow/phase-0-spec-update.md) §SPEC lifecycle.
 - **SPEC version branches.** The spec is always written on `main`, which often holds several releases' worth of behavior at once. Projects that opt in get one `spec/vX.Y.Z` branch per in-progress milestone; CI cherry-picks each `main` commit into the branches its work item's milestone belongs to, so engineers and QA read exactly one release's full behavior, frozen by a release tag. See [`recipes/spec-version-branches.md`](recipes/spec-version-branches.md) (the `recipes/` folder holds how-to-install guides; the sync scripts, tests and CI snippet are in [`recipes/spec-version-branches/`](recipes/spec-version-branches/)).
+- **SPEC CI gates.** Nine deterministic CI checks (banned terms, spec prose, lost qualifiers, numbering, notifications, mockups, work-item references, decision-record schema and views) in plain Python with no LLM calls. See [`recipes/spec-ci-gates.md`](recipes/spec-ci-gates.md).
 - **Verification.** Any code change follows [`workflow/verification.md`](workflow/verification.md): acceptance scripts are written first by someone other than the implementer, the implementer cannot edit them, and escaped bugs become new rules.
 
 ## The 12 agents
@@ -89,6 +90,7 @@ All rulebooks are in Traditional Chinese. A grouped index with a reading order i
 | [`file-discipline.md`](workflow/file-discipline.md) · [`discussion-docs.md`](workflow/discussion-docs.md) | Preventing file sprawl, discussion-document discipline |
 | [`verification.md`](workflow/verification.md) | Verification for code changes: scripts written first by a non-implementer, the implementer cannot edit the checks, escaped bugs become rules |
 | [`recipes/spec-version-branches.md`](recipes/spec-version-branches.md) | Recipe: SPEC version branches with CI auto-sync |
+| [`recipes/spec-ci-gates.md`](recipes/spec-ci-gates.md) | Recipe: SPEC CI gates (lints and decision-record checks, with scripts and tests) |
 
 ## Try it (manual)
 
@@ -116,7 +118,7 @@ cp <this-repo>/agent-workflow/commands/*.md .claude/commands/
 cp -R <this-repo>/agent-workflow/skills/*   .claude/skills/
 ```
 
-> `$CLAUDE_WORKSPACE` in the rulebooks, command and skills means the location of this folder (`agent-workflow/`). Helper scripts they mention under `scripts/` are not included yet (see Roadmap); the version-branch scripts under `recipes/` are included.
+> `$CLAUDE_WORKSPACE` in the rulebooks, command and skills means the location of this folder (`agent-workflow/`). Helper scripts they mention under `scripts/` are not included yet (see Roadmap); the version-branch scripts and SPEC CI checks under `recipes/` are included.
 
 ## Glossary
 
@@ -142,6 +144,7 @@ cp -R <this-repo>/agent-workflow/skills/*   .claude/skills/
 ## Roadmap
 
 - [ ] Project template and one-command bootstrap
-- [ ] The helper check scripts referenced by the rulebooks
+- [x] SPEC CI checks ([`recipes/spec-ci-gates.md`](recipes/spec-ci-gates.md))
+- [ ] The remaining helper scripts referenced by the rulebooks (spec-grep, writer self-report check, discussion-doc check)
 - [ ] A worked example in a fictional domain (`examples/`)
 - [ ] English rulebooks

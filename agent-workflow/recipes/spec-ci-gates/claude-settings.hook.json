@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *HTML設計稿/*.html) d=$(dirname \"$f\"); while [ \"$d\" != \"/\" ] && [ \"$d\" != \".\" ] && [ ! -f \"$d/Spec/.convert_tools/mockup_lint.py\" ]; do d=$(dirname \"$d\"); done; if [ -f \"$d/Spec/.convert_tools/mockup_lint.py\" ]; then python3 \"$d/Spec/.convert_tools/mockup_lint.py\" --file \"$f\" 1>&2 || exit 2; fi ;; esac; exit 0",
+            "timeout": 30,
+            "statusMessage": "mockup lint 檢查中…"
+          }
+        ]
+      }
+    ]
+  }
+}

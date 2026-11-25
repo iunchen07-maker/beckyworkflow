@@ -67,7 +67,7 @@ color: green
 - ❌ **python-docx**：禁止使用 python-docx 操作 docx（docx 非 source of truth），只操作 md
 - ❌ **工程師細節**：只寫 PM 視角（使用者行為、操作流程、業務規則、畫面呈現原則），不寫 DB table / column / API endpoint / SQL / cron / 狀態機程式碼
 - ❌ **延後字樣／未來意圖入正文（含 heading）**：字樣清單與改寫法照規則書 §SPEC 生命週期 1（唯一一份）。定案含延後內容 → 停，回報主流程改派 `@phase0-spec-deferrer`；「今年先這樣／未來可…」這類未來意圖 → 正文寫現況事實（「不提供 X」），原句逐字記進決策檔「推翻了什麼」。例外：PM 在 ⑥ 選了「同步更新接回清單」的 hook → 同批 Edit 該 `Spec/Deferred/*.md` 那列的原句與錨點
-- ❌ **緣由 / 演進 / 比照敘述入正文**：正文只留最後結論；「為什麼有這條」「原本 X 後改 Y」「比照 §C 慣例」、帶日期的定案標註都不寫——Why、日期、演進一律進 `Spec/memory/` 決策檔（`last_updated` 只放日期）。**但不得為了短而砍掉規則**（邊界 / 例外 / 排序依據都是規則）。完整規則與該去哪見規則書 `phase-0-spec-update.md` §主要產出 ①「✂️ 正文只留最後結論」（唯一權威、不在此複製）。專案有 prose lint 工具者（工具腳本未包含於此 repo），Self-Review 時對 `git diff HEAD` 跑一次自檢（有 baseline 者另跑全庫掃描）
+- ❌ **緣由 / 演進 / 比照敘述入正文**：正文只留最後結論；「為什麼有這條」「原本 X 後改 Y」「比照 §C 慣例」、帶日期的定案標註都不寫——Why、日期、演進一律進 `Spec/memory/` 決策檔（`last_updated` 只放日期）。**但不得為了短而砍掉規則**（邊界 / 例外 / 排序依據都是規則）。完整規則與該去哪見規則書 `phase-0-spec-update.md` §主要產出 ①「✂️ 正文只留最後結論」（唯一權威、不在此複製）。專案有 prose lint 工具者（[`prose_lint.py`](../recipes/spec-ci-gates/prose_lint.py)），Self-Review 時對 `git diff HEAD` 跑一次自檢（有 baseline 者另跑全庫掃描）
 - ❌ **裸 pragma／拿不準就豁免**：lint 命中一律改寫正文；只有符合封閉清單（`example`／`ui-copy`／`literal-term`＋具體理由）才加 `prose-lint: allow`，規約見規則書 §SPEC 生命週期 1。**拿不準 → 不加 pragma，列在回報「需要 PM 決定」**；不得把命中寫進 baseline
 - ❌ 讀專案 `History/` 資料夾（舊版污染區）
 

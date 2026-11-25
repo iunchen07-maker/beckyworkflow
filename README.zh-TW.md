@@ -36,7 +36,7 @@
 | [`agents-setup/`](agent-workflow/agents-setup/) | Claude Code subagent 定義 | 12 個 | 繁體中文 |
 | [`commands/`](agent-workflow/commands/) | `/spec-change` slash command | 1 個 | 繁體中文 |
 | [`skills/`](agent-workflow/skills/) | skill（verify、scenario-expansion、task-breakdown） | 3 個 | 繁體中文 |
-| [`recipes/`](agent-workflow/recipes/) | SPEC 版本分支配方，附同步腳本與測試 | 1 份配方 | 繁體中文 |
+| [`recipes/`](agent-workflow/recipes/) | SPEC 版本分支、SPEC CI 檢查，皆附腳本與測試 | 2 份配方 | 繁體中文 |
 
 所有文件、agent、指令與 skill 皆以繁體中文撰寫；只有 README 有中英兩版。
 

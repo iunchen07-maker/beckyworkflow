@@ -1,0 +1,104 @@
+# ── SPEC 品質閘門（說明見 recipes/spec-ci-gates.md）──
+# 貼進專案 .gitlab-ci.yml。前提：stages 裡有 `lint`（放在 deploy 之前）。全部是確定性檢查、不呼叫 LLM。
+# 用不到的 job 整個刪掉（例：沒有通知信總表就刪 notification-lint）。
+
+.spec-lint-base: &spec-lint-base
+  stage: lint
+  image: python:3.12-slim
+  needs: []                              # lint 之間互不相依，平行跑
+  variables:
+    PYTHONUTF8: "1"                      # slim image 預設 locale 處理不了中文檔名／內容
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: $CI_COMMIT_BRANCH              # 任何 branch push 都跑
+
+# 要看 git 歷史的 job 用這個：有 git、clone 深一點
+.spec-lint-git: &spec-lint-git
+  <<: *spec-lint-base
+  variables:
+    PYTHONUTF8: "1"
+    GIT_DEPTH: "50"
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends git
+    - git config --global --add safe.directory "$(pwd)" 2>/dev/null || true
+
+glossary-lint:                           # 擋：禁用名詞；報：結構、coverage
+  <<: *spec-lint-base
+  script:
+    - python3 Spec/.convert_tools/glossary_lint.py --banned
+    - python3 Spec/.convert_tools/glossary_lint.py --structure || true
+    - python3 Spec/.convert_tools/glossary_lint.py --coverage || true
+
+prose-lint:                              # 擋：新增行＋全庫對 baseline＋baseline 長大；報：限定詞
+  <<: *spec-lint-git
+  script:
+    # BEFORE_SHA 在 branch 首次 push 全 0、force-push 後可能不存在 → 退 HEAD~1，再不行只跑全掃
+    - BASE="$CI_COMMIT_BEFORE_SHA"
+    - if ! git rev-parse -q --verify "$BASE^{commit}" >/dev/null 2>&1; then BASE="HEAD~1"; fi
+    - |
+      if git rev-parse -q --verify "$BASE^{commit}" >/dev/null 2>&1; then
+        python3 Spec/.convert_tools/qualifier_guard.py --diff "$BASE" || true
+        python3 Spec/.convert_tools/prose_lint.py --all --diff "$BASE" --check-baseline-shrink "$BASE"
+      else
+        echo "無可比對 base：只跑全掃"
+        python3 Spec/.convert_tools/prose_lint.py --all
+      fi
+
+numbering-lint:                          # 擋：重號、AC 缺號／重複、保留編號重用；報：排列沒遞增
+  <<: *spec-lint-base
+  script:
+    - python3 Spec/.convert_tools/numbering_lint.py
+
+notification-lint:                       # 只報，永遠 exit 0
+  <<: *spec-lint-base
+  script:
+    - python3 Spec/.convert_tools/notification_lint.py || true
+
+mockup-lint:                             # 擋：R1–R3、R6、baseline 長大；報：R5（R5_BLOCKS 改 True 才擋）
+  <<: *spec-lint-git
+  script:
+    # 先驗閘門自己，再驗稿：規則改壞要先炸在這裡
+    - python3 Spec/.convert_tools/mockup_lint.py --selftest
+    - python3 Spec/.convert_tools/mockup_lint.py --all
+    - python3 Spec/.convert_tools/mockup_lint.py --deferred
+    # baseline 只縮不長；無可比對 base（首個 commit）才略過
+    - BASE="$CI_COMMIT_BEFORE_SHA"
+    - if ! git rev-parse -q --verify "$BASE^{commit}" >/dev/null 2>&1; then BASE="HEAD~1"; fi
+    - |
+      if git rev-parse -q --verify "$BASE^{commit}" >/dev/null 2>&1; then
+        python3 Spec/.convert_tools/mockup_lint.py --check-baseline-shrink "$BASE"
+      else
+        echo "無可比對 base：略過 baseline 檢查"
+      fi
+
+commit-issue-check:                      # 試行：紅了只提醒；團隊確認後拿掉 allow_failure
+  <<: *spec-lint-git
+  allow_failure: true
+  script:
+    - BASE="$CI_COMMIT_BEFORE_SHA"
+    - |
+      if ! git rev-parse -q --verify "$BASE^{commit}" >/dev/null 2>&1; then
+        git fetch -q --depth=50 origin "$CI_DEFAULT_BRANCH" || true
+        BASE="origin/$CI_DEFAULT_BRANCH"
+        if ! git rev-parse -q --verify "$BASE^{commit}" >/dev/null 2>&1; then echo "無可比對 base，跳過"; exit 0; fi
+      fi
+    - python3 Spec/.convert_tools/commit_issue_check.py --range "$BASE..$CI_COMMIT_SHA"
+
+decision-schema-check:                   # 擋：決策檔 frontmatter、推翻一致性、新增／改正文的固定段落與大小
+  <<: *spec-lint-git
+  script:
+    - BASE="$CI_COMMIT_BEFORE_SHA"
+    - |
+      if ! git rev-parse -q --verify "$BASE^{commit}" >/dev/null 2>&1; then
+        git fetch -q --depth=50 origin "$CI_DEFAULT_BRANCH" || true
+        BASE="origin/$CI_DEFAULT_BRANCH"
+        if ! git rev-parse -q --verify "$BASE^{commit}" >/dev/null 2>&1; then BASE=""; fi
+      fi
+    - if [ -n "$BASE" ]; then python3 ci/decisions.py check --base "$BASE"; else python3 ci/decisions.py check; fi
+
+decision-views-check:                    # 試行：Spec/memory/index/ 是否最新
+  <<: *spec-lint-base
+  allow_failure: true
+  script:
+    - python3 ci/decisions.py views --check

@@ -5,8 +5,8 @@
 > 一套給 PM 用 Claude Code「從零到有設計一個系統」的 spec-driven 工作流：
 > **人決策、AI 執行與稽核**，並依任務難度分配模型等級。
 
-這個資料夾（`agent-workflow/`）收錄的是**方法論本身**：工作流規則書（`workflow/`）與 12 個 Claude Code subagent 定義（`agents-setup/`），另附 1 個 slash command（`commands/`）、3 個 skill（`skills/`）與 1 份配方（`recipes/`：SPEC 版本分支，附同步腳本與測試）。規則書索引見 [`workflow/README.md`](workflow/README.md)。
-目前是展示版（v0.1）：專案 template、起手腳本與輔助檢查腳本尚未包含，規則書中提到的腳本請視為設計說明。
+這個資料夾（`agent-workflow/`）收錄的是**方法論本身**：工作流規則書（`workflow/`）與 12 個 Claude Code subagent 定義（`agents-setup/`），另附 1 個 slash command（`commands/`）、3 個 skill（`skills/`）與 2 份配方（`recipes/`：SPEC 版本分支、SPEC 品質閘門，皆附腳本與測試）。規則書索引見 [`workflow/README.md`](workflow/README.md)。
+目前是展示版（v0.1）：專案 template、起手腳本與部分輔助腳本尚未包含；規則書標「未包含於此 repo」的腳本請視為設計說明。SPEC CI 檢查已收在 `recipes/`。
 
 ---
 
@@ -75,6 +75,8 @@
 
 **SPEC 版本分支**：SPEC 一律寫在 `main`，但 `main` 常同時放好幾版的行為。宣告啟用的專案，每個開發中的 milestone 一條 `spec/vX.Y.Z` 分支，CI 依工作項的 milestone 把 `main` 的 commit 挑進該挑的分支；RD／QA 讀分支就拿到「這版完整的行為」，release 打 tag 後凍結。規則見 §SPEC 生命週期 7，安裝與操作見 `recipes/` 資料夾：[`recipes/spec-version-branches.md`](recipes/spec-version-branches.md)（同步腳本、測試與 CI 片段在 [`recipes/spec-version-branches/`](recipes/spec-version-branches/)）。
 
+**SPEC 品質閘門**：九項確定性 CI 檢查（禁用名詞、正文字樣、限定詞、編號、通知信、mockup、commit 工作項、決策檔 schema 與檢視），純 Python、不呼叫 LLM。見 [`recipes/spec-ci-gates.md`](recipes/spec-ci-gates.md)。
+
 ## 12 個 agents
 
 | Agent | Phase | 角色 | Model |
@@ -108,6 +110,7 @@ Phase 7 是人工抽測，由 PM 自己跑。Phase 3（Mockup）已併入 Phase 
 | [`file-discipline.md`](workflow/file-discipline.md) · [`discussion-docs.md`](workflow/discussion-docs.md) | 防檔案增生、討論文件紀律 |
 | [`verification.md`](workflow/verification.md) | 寫程式的驗證流程：劇本非實作者先寫、實作方不得改檢查、漏網 bug 變規則 |
 | [`recipes/spec-version-branches.md`](recipes/spec-version-branches.md) | 配方：SPEC 版本分支＋CI 自動同步 |
+| [`recipes/spec-ci-gates.md`](recipes/spec-ci-gates.md) | 配方：SPEC 品質閘門（CI lint 與決策檔檢查，附腳本與測試） |
 
 ## 試用方式（手動）
 
@@ -135,7 +138,7 @@ cp <this-repo>/agent-workflow/commands/*.md .claude/commands/
 cp -R <this-repo>/agent-workflow/skills/*   .claude/skills/
 ```
 
-> 規則書、指令與 skill 提到的 `$CLAUDE_WORKSPACE` 指的是這個資料夾（`agent-workflow/`）的位置；規則書提到的 `scripts/`（檢查腳本）尚未包含（見 Roadmap）；`recipes/` 底下的版本分支腳本則已包含。
+> 規則書、指令與 skill 提到的 `$CLAUDE_WORKSPACE` 指的是這個資料夾（`agent-workflow/`）的位置；規則書提到的 `scripts/`（輔助腳本）尚未包含（見 Roadmap）；`recipes/` 底下的版本分支腳本與 SPEC CI 檢查則已包含。
 
 ## 名詞表
 
@@ -161,6 +164,7 @@ cp -R <this-repo>/agent-workflow/skills/*   .claude/skills/
 ## Roadmap
 
 - [ ] 新專案 template 與一鍵起手腳本
-- [ ] 規則書引用的檢查腳本（spec-grep、writer 自報複驗、討論文件檢查等）
+- [x] SPEC CI 檢查（[`recipes/spec-ci-gates.md`](recipes/spec-ci-gates.md)）
+- [ ] 其餘規則書引用的輔助腳本（spec-grep、writer 自報複驗、討論文件檢查等）
 - [ ] 用虛構領域完整跑一輪的範例（examples/）
 - [ ] 英文版規則書

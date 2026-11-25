@@ -36,10 +36,10 @@ SPEC 一律寫在 `main`，但 `main` 常同時放好幾版的行為（v1.10.0 �
 | [`spec_at.py`](spec-version-branches/spec_at.py) | 依 milestone 還原某版 SPEC；載入設定、issue 抓法、版本比較、milestone 查詢（`spec_sync.py` 共用） |
 | [`spec_sync.py`](spec-version-branches/spec_sync.py) | `sync`／`check`／`release-check` 三個子指令（規則全文在檔頭 docstring） |
 | [`spec_branches_config.example.py`](spec-version-branches/spec_branches_config.example.py) | 專案設定範本（每個 key 的說明在檔內註解） |
-| [`test/`](spec-version-branches/test/) | `test_spec_at.py`、`test_spec_sync.py`（假 GitLab＋暫存 repo，不連網） |
+| [`test/`](spec-version-branches/test/) | `test_spec_at.py`、`test_spec_sync.py`、`test_release_spec_change_mark.py`（假 GitLab＋暫存 repo，不連網） |
 | [`gitlab-ci.snippet.yml`](spec-version-branches/gitlab-ci.snippet.yml) | 兩個 CI job＋共用 base＋其他 job 要加的排除規則 |
-| [`install.sh <repo>`](spec-version-branches/install.sh) | 覆蓋複製 `spec_at.py`、`spec_sync.py` → `<repo>/ci/`，兩支測試 → `<repo>/ci/test/`；`ci/spec_branches_config.py` 只在缺時從範本建立（已有就不碰）；印出剩下的手動步驟。不 commit、不 push |
-| [`check-spec-branches-sync.sh <repo>`](spec-version-branches/check-spec-branches-sync.sh) | 比對 `<repo>/ci/` 的四支複本與正本（設定檔不比對）：exit 0 一致／1 drift 或缺檔（含缺設定檔）／2 未安裝（`ci/spec_at.py`、`ci/spec_sync.py` 都沒有） |
+| [`install.sh <repo>`](spec-version-branches/install.sh) | 覆蓋複製 `spec_at.py`、`spec_sync.py` → `<repo>/ci/`，三支測試 → `<repo>/ci/test/`；`ci/spec_branches_config.py` 只在缺時從範本建立（已有就不碰）；印出剩下的手動步驟。不 commit、不 push |
+| [`check-spec-branches-sync.sh <repo>`](spec-version-branches/check-spec-branches-sync.sh) | 比對 `<repo>/ci/` 的五支複本與正本（設定檔不比對）：exit 0 一致／1 drift 或缺檔（含缺設定檔）／2 未安裝（`ci/spec_at.py`、`ci/spec_sync.py` 都沒有） |
 
 ## 完整流程（附例）
 
@@ -108,7 +108,7 @@ python3 ci/spec_sync.py release-check v1.10.0 --tag    # 全過才在分支最�
    | `NO_CHANGE_MARK` | | release-check ② 認「SPEC 不用改」的 regex，預設 `SPEC 不用改，§`；`None`＝每張都要有 commit |
    | `SPEC_CHANGE_MARK` | | release-check ② 認「SPEC 變更」那行的 regex，預設 `SPEC 變更：`；標記之後的 `commit <sha>` 要在分支上；`None`＝不接受 |
    | `WEBHOOK_ENV` | | 通知 webhook 放在哪個環境變數，預設 `SPEC_SYNC_WEBHOOK` |
-3. **本機跑測試**：`(cd <repo> && python3 -m unittest discover -s ci/test -p 'test_spec_*.py')`（不連網）。
+3. **本機跑測試**：`(cd <repo> && python3 -m unittest discover -s ci/test -p 'test_*.py')`（不連網）。
 4. **CI job**：把 `gitlab-ci.snippet.yml` 的 `.spec-sync-base`＋兩個 job 貼進 `.gitlab-ci.yml`（`stages:` 加 `sync`；bot 信箱換成專案慣用的）。同時照檔內註解：
    - 所有 **deploy job 排除 `spec/v*`**（`- if: '$CI_COMMIT_BRANCH =~ /^spec\/v/'` → `when: never`），不然分支上的稿會蓋掉 `main` 的部署。
    - 既有的**排程 job 排除 `SPEC_BRANCH_CHECK == "1"`**，不然每日檢查會把它們一起叫醒。
@@ -131,7 +131,7 @@ python3 ci/spec_sync.py release-check v1.10.0 --tag    # 全過才在分支最�
 
 ## 更新腳本
 
-1. **先改正本** `recipes/spec-version-branches/`，跑 `python3 -m unittest discover -s test -p 'test_spec_*.py'`（在該目錄），commit 正本所在的 repo。
+1. **先改正本** `recipes/spec-version-branches/`，跑 `python3 -m unittest discover -s test -p 'test_*.py'`（在該目錄），commit 正本所在的 repo。
 2. 對每個宣告「有」的 repo 跑 `install.sh <repo>`，在該 repo commit（腳本改動也會被 sync 挑進各分支，分支上的 CI 才跟 `main` 一致）。
 3. `recipes/spec-version-branches/check-spec-branches-sync.sh <repo>` 確認 exit 0。
 

@@ -64,13 +64,13 @@ color: orange
 - **Spec 檔樹 ↔ 索引一致**（本次有新增 / 刪除 / 改名 spec 檔時必查）：Glob 實際 `Spec/` 下 .md 清單 ↔ README / INDEX 列的檔案樹；揪「實體有索引無」或「索引有實體無（dangling）」，機械修正索引或回報。
 
 ### 維度 3：規範遵循
-- **禁用名詞**：有 glossary lint 工具的專案（工具腳本未包含於此 repo）跑禁用詞檢查（命中即修）＋覆蓋率檢查（掃新 drift 概念）；無工具才人工對照禁用表
+- **禁用名詞**：有 glossary lint 工具的專案（[`glossary_lint.py`](../recipes/spec-ci-gates/glossary_lint.py)）跑禁用詞檢查（命中即修）＋覆蓋率檢查（掃新 drift 概念）；無工具才人工對照禁用表
 - **本批新名詞兩向對照**：定案清單 `本批新名詞` 欄 ↔ 本批 Glossary diff 雙向核對（漏補即補；diff 多出未宣告詞＝疑似脫稿造詞，回報 PM）
 - **文件分流／memory 位置**：Project_Context 不塞 SPEC 細節、個案決策不進 Decision_Principles、工程師細節不入 SPEC；project memory 在**該專案 repo 的 `Spec/memory/`**（寫錯位置 → 搬到正確位置）
 - **✂️ 正文只留最後結論**（規則書 `phase-0-spec-update.md` §主要產出 ①，**已知反覆復發、必查**）：
-  1. **機械層**：有 prose lint 工具的專案（工具腳本未包含於此 repo）親自對 `git diff HEAD` 跑，有 baseline 者另跑全庫掃描與「baseline 不得變大」檢查（命中絕對日期 / 拍板 / 議題 N / 人名 即修；不合格 pragma〔裸 allow、類別不在 `example／ui-copy／literal-term`、理由空或寫沿用／既有／非本次〕＝改寫正文、拔掉 pragma；baseline 長大＝🔴）；無工具則 Grep 本批改動行（含 heading）找同樣特徵
+  1. **機械層**：有 prose lint 工具的專案（[`prose_lint.py`](../recipes/spec-ci-gates/prose_lint.py)）親自對 `git diff HEAD` 跑，有 baseline 者另跑全庫掃描與「baseline 不得變大」檢查（命中絕對日期 / 拍板 / 議題 N / 人名 即修；不合格 pragma〔裸 allow、類別不在 `example／ui-copy／literal-term`、理由空或寫沿用／既有／非本次〕＝改寫正文、拔掉 pragma；baseline 長大＝🔴）；無工具則 Grep 本批改動行（含 heading）找同樣特徵
   2. **密度層**：本批新增的表格列，跟**同表鄰近既有列**比同欄長度；明顯長 2~3 倍 → 逐句判是規則還是解釋
-  3. **語意層**（機械測不準、這層靠你；**涵蓋 `git diff HEAD` 每個 hunk，含刪除與改寫行，不只新增行**）：專案有限定詞守門工具（工具腳本未包含於此 repo）者先對 `git diff HEAD` 跑，它列出的每一對（限定詞變少／§ID 消失／數字改變）逐條判「規則範圍有沒有跟著變」，變了且定案沒授權＝🔧 還原或待 PM；再逐句問「這是規則，還是在解釋為什麼有這條規則」——「補了什麼空窗」「與 X 有何不同」「比照 Y 慣例」都屬後者，**移到 `Spec/memory/` 決策檔，不是直接刪掉**
+  3. **語意層**（機械測不準、這層靠你；**涵蓋 `git diff HEAD` 每個 hunk，含刪除與改寫行，不只新增行**）：專案有限定詞守門工具（[`qualifier_guard.py`](../recipes/spec-ci-gates/qualifier_guard.py)）者先對 `git diff HEAD` 跑，它列出的每一對（限定詞變少／§ID 消失／數字改變）逐條判「規則範圍有沒有跟著變」，變了且定案沒授權＝🔧 還原或待 PM；再逐句問「這是規則，還是在解釋為什麼有這條規則」——「補了什麼空窗」「與 X 有何不同」「比照 Y 慣例」都屬後者，**移到 `Spec/memory/` 決策檔，不是直接刪掉**
   4. **反向護欄**：規則本身（邊界 / 例外 / 排序依據 / 適用範圍）**一條都不准砍**；砍過頭比留著囉唆更嚴重，砍前先確認那句沒有承載規則
 - 以上細則與「自動修正 vs 回報」邊界照規則書 `phase-0-spec-update.md` §執行順序 ⑨a：**機械性偏差直接修正、改完列「已修」；僅「SPEC 內容與議題檔拍板結論互相矛盾」等非機械可判項回報 PM、不擅自改**
 

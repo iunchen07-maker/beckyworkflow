@@ -36,7 +36,7 @@ Each system project folder has two documents (written in Traditional Chinese):
 | [`agents-setup/`](agent-workflow/agents-setup/) | Claude Code subagent definitions | 12 | Traditional Chinese |
 | [`commands/`](agent-workflow/commands/) | The `/spec-change` slash command | 1 | Traditional Chinese |
 | [`skills/`](agent-workflow/skills/) | Skills (verify, scenario-expansion, task-breakdown) | 3 | Traditional Chinese |
-| [`recipes/`](agent-workflow/recipes/) | SPEC version-branch recipe, with its sync scripts and tests | 1 recipe | Traditional Chinese |
+| [`recipes/`](agent-workflow/recipes/) | SPEC version branches and SPEC CI checks, each with scripts and tests | 2 recipes | Traditional Chinese |
 
 All documents, agents, commands and skills are written in **Traditional Chinese**; only the READMEs are bilingual (English and Chinese).
 

@@ -3,7 +3,7 @@
 #
 # 用法: recipes/spec-version-branches/install.sh <repo>
 #   複製（覆蓋）  spec_at.py、spec_sync.py            → <repo>/ci/
-#                 test/test_spec_at.py、test_spec_sync.py → <repo>/ci/test/
+#                 test/test_spec_at.py、test_spec_sync.py、test_release_spec_change_mark.py → <repo>/ci/test/
 #   只在缺時建立  <repo>/ci/spec_branches_config.py（從 spec_branches_config.example.py；已有就不碰）
 #   印出剩下的手動步驟。不 commit、不 push。
 # 裝完用同目錄的 check-spec-branches-sync.sh <repo> 確認與正本一致。
@@ -22,7 +22,7 @@ for f in spec_at.py spec_sync.py; do
   cp "$SRC/$f" "$REPO/ci/$f"
   echo "✓ ci/$f"
 done
-for f in test_spec_at.py test_spec_sync.py; do
+for f in test_spec_at.py test_spec_sync.py test_release_spec_change_mark.py; do
   cp "$SRC/test/$f" "$REPO/ci/test/$f"
   echo "✓ ci/test/$f"
 done
@@ -41,7 +41,7 @@ cat <<EOF
 
 剩下的手動步驟（$REPO）：
 $( [ "$NEW_CFG" -eq 1 ] && echo "  0. 填 ci/spec_branches_config.py：PROJECT、ISSUE_RE、WATCH 必填，其餘看註解。" )
-  1. 跑測試：python3 -m unittest discover -s ci/test -p 'test_spec_*.py'
+  1. 跑測試：python3 -m unittest discover -s ci/test -p 'test_*.py'
   2. CI：把 $SRC/gitlab-ci.snippet.yml 的兩個 job 貼進 .gitlab-ci.yml
      （已貼過且 job 指令沒變就跳過），並照檔內註解替部署 job／其他排程 job 加排除規則。
   3. CI/CD 變數：SPEC_SYNC_PUSH_TOKEN（Masked，Project Access Token，Developer：write_repository；

@@ -82,10 +82,10 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
    - 對照「結構化定案清單」+ 議題檔「拍板結論」區塊，逐項驗證寫入是否忠實、有無漏寫 / 寫錯（不信任 writer 的 Self-Review，自己重讀檔案）
    - **自報 JSON 機器複驗**：跑 `$CLAUDE_WORKSPACE/scripts/spec-writer-report-check.sh <repo> [report 檔]`（工具腳本未包含於此 repo；平行 writer 逐份跑），逐條確認 report 的檔與新增原句真的在 `git diff`；🔴＝謊報
    - **lint 自己跑**：專案有的 lint（prose／glossary／numbering／mockup）verifier 親自跑；派工 prompt 寫「lint 已 0」不算數
-   - **語意層涵蓋每個改動 hunk**（含刪除與改寫，不只新增行）：逐對問「規則範圍有沒有跟著變」；專案有限定詞守門工具（未包含於此 repo）者對 base 跑 diff 模式，它列出的每一對（限定詞／§ID／數字消失或改變）逐條判定
+   - **語意層涵蓋每個改動 hunk**（含刪除與改寫，不只新增行）：逐對問「規則範圍有沒有跟著變」；專案有限定詞守門工具（[`qualifier_guard.py`](../recipes/spec-ci-gates/qualifier_guard.py)）者對 base 跑 diff 模式，它列出的每一對（限定詞／§ID／數字消失或改變）逐條判定
    - **自報 vs 實際改檔對照**：讀 `.claude/spec-dirty.log`（PostToolUse hook 客觀記錄本批改檔，hook 未包含於此 repo；⑨ 前已清空）對 spec-writer 自報改檔清單，揪脫稿改檔 / 謊報；log 不存在則用 `git diff --name-only`
    - **生命週期檢查**：決策檔有動且欄位填齊、`changes` 的 §ID 都還在（或已列 `retired`）、`source`＝本批工作項；新取的號不撞 `Spec/Deferred/` 保留編號；改動行（含 heading）無延後字樣與未來意圖（§SPEC 生命週期 1）；`Spec/Deferred/*.md` 每列錨點（三種：剪後句全文／佔位 heading／§ID）仍在活檔逐字唯一（斷了＝回報 PM「<功能>更難接回」）；工作項為全路徑（commit 時引用它）
-   - 檢查編號規則（SPEC_NUMBERING_RULES）、frontmatter `last_updated`（有 frontmatter 者；只有日期）、cross-ref 有效性、**禁用名詞（有 glossary lint 工具〔未包含於此 repo〕的專案一律跑禁用詞檢查＝確定性、取代人工讀段落，命中即修；無此工具的專案才退回人工對照禁用表）**、文件分流（Project_Context 不塞細節）、memory 位置（該專案 `Spec/memory/`）
+   - 檢查編號規則（SPEC_NUMBERING_RULES）、frontmatter `last_updated`（有 frontmatter 者；只有日期）、cross-ref 有效性、**禁用名詞（有 glossary lint 工具〔[`glossary_lint.py`](../recipes/spec-ci-gates/glossary_lint.py)〕的專案一律跑禁用詞檢查＝確定性、取代人工讀段落，命中即修；無此工具的專案才退回人工對照禁用表）**、文件分流（Project_Context 不塞細節）、memory 位置（該專案 `Spec/memory/`）
    - **本批新名詞兩向對照（治「超脫 Glossary」根因：出生即登記，不事後挖）**：對定案結論 `本批新名詞` 欄——(a) 宣告的每個詞都要在本批 Glossary diff 出現（漏補即補）；(b) Glossary diff 不得多出未宣告的詞（多出＝疑似脫稿造詞，回報 PM）。有 glossary lint 工具者另跑覆蓋率檢查，掃有無新 drift 概念未收錄。此欄的宣告來源＝⑦、原子寫入＝⑨。
    - **機械性偏差直接修正**（漏寫 / 編號 / 格式 / 禁用名詞〔linter 命中〕/ cross-ref / memory 位置 / 漏補 Glossary 詞條）；**僅「SPEC 內容與議題檔拍板結論互相矛盾」「Glossary diff 多出未宣告詞」這類非機械判定回報 PM**
    - 破解 spec-writer「球員兼裁判」：寫的人與驗的人是不同 agent
@@ -115,7 +115,7 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
    - **Commit 1**：本次 Phase 0 的 SPEC / 脈絡 / memory / README 變更
    - 排 **Phase 1** 任務，依 mockup-drift 報告更新對應 mockup（必審項調整 / dangling 退役或改引用 / 新增項補畫）
    - **Commit 2**：Phase 1 mockup 更新
-   - 專案若有 mockup lint（pre-commit hook 或 CI；未包含於此 repo），Commit 2 前跑一次確認無新 drift
+   - 專案若有 mockup lint（本機 hook 或 CI，見配方 [`spec-ci-gates.md`](../recipes/spec-ci-gates.md)），Commit 2 前跑一次確認無新 drift
    - feature branch 合回 main（fast-forward）；main 上永遠看不到「SPEC 已改但 mockup 沒跟」的中間狀態
       ↓
 ⑫ （可選）需要交付 docx 給雲端硬碟 / Reviewer 時，若專案有 md→docx 轉檔工具（未包含於此 repo），用它一鍵生成
@@ -148,7 +148,7 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
    - **未來意圖不入正文**：「本年度不做／今年先這樣／未來可…」→ 正文寫現況事實（如「不提供 X」），原句逐字記進本批決策檔「推翻了什麼」；PM 拍為延後的才走 2。
    - **heading 同樣適用**：不寫「（議題 X 拍板 日期）」、不帶延後字樣。
    - **lint 豁免 pragma（封閉清單）**：只收行尾 `<!-- prose-lint: allow <example|ui-copy|literal-term>: <理由> -->`（範例值／逐字 UI 文案／字面名詞）；理由必填，不得拿歷程當理由（沿用、既有、非本次…）。拿不準 → **不加 pragma**，列給 PM。
-   - **baseline 只縮不長**（專案的 prose lint 工具有 baseline 檔者；工具未包含於此 repo）：全庫模式是硬門，不在 baseline 的命中即紅；清完債才重寫 baseline 縮小，新命中不得寫進 baseline。
+   - **baseline 只縮不長**（專案的 prose lint 工具有 baseline 檔者；工具見 [`prose_lint.py`](../recipes/spec-ci-gates/prose_lint.py)）：全庫模式是硬門，不在 baseline 的命中即紅；清完債才重寫 baseline 縮小，新命中不得寫進 baseline。
 2. **延後功能**（已定案、晚點啟用、啟用時不必再議）→ 由 `@phase0-spec-deferrer`（defer 模式）原文搬到 `Spec/Deferred/<功能>.md`；檔末**接回清單**逐列記「檔案／§／原句全文／剪掉的字／錨點」，restore 模式照清單**依錨點**接回（不依編號）、錨點對不上列給 PM。`Spec/BACKLOG.md` 每個延後功能一行 → Deferred 檔＋工作項。與延後文字相鄰的**永久規則不搬**。
    - **保留編號**：搬走的每個編號項在正文原位留佔位——表格／目錄列 `| R-3 | 已移至 Deferred/<功能>.md（保留編號） |`；搬走的節（US- 或單獨 H3，任一層級）heading 改成 `<編號> <功能名> — 已移至 Deferred/<功能>.md（保留編號）`（不留延後字樣、議題、日期；原 heading 全文逐字搬進 Deferred 檔）；只有段落中間的片段走剪句＋接回清單。Deferred 檔第一行 `保留編號：<ids>`。取新號時這些號視同已存在（SPEC_NUMBERING_RULES §3.5）；接回時編號原樣回來。
    - **接回錨點**三種：剪後句全文、清理後的佔位 heading、§ID；不得以延後字樣片語當錨點。
@@ -176,7 +176,7 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
 5. **交棒給工程的格式**（如 milestone 異動摘要）依各團隊慣例而定，不在本工作流範圍內（見下方 ⑤）；若團隊要產出，從工作項＋決策檔產生，不另手寫一份。
 6. **驗證關卡**：
    - (a) **每個 SPEC／mockup commit 都過 verifier**，commit 訊息帶 trailer `Verified-by: <agent 或人名>`；主流程不得繞過 verifier 直接改 SPEC（含在別的 issue 的 worktree 順手改）。
-   - (b) verifier 語意檢查涵蓋**每個改動 hunk**（含刪除與改寫），專案有限定詞守門工具（未包含於此 repo）就跑；lint 由 verifier 親自跑，不採信派工 prompt 的「lint 已 0」。
+   - (b) verifier 語意檢查涵蓋**每個改動 hunk**（含刪除與改寫），專案有限定詞守門工具（[`qualifier_guard.py`](../recipes/spec-ci-gates/qualifier_guard.py)）就跑；lint 由 verifier 親自跑，不採信派工 prompt 的「lint 已 0」。
    - (c) **存量清理／遷移**（全庫套新規則、搬體例）只能由**獨立稽核 agent** 宣告完成——不是該批 writer、也不是該批 verifier；派工 prompt 不給「lint 已 0」前提、不預先核准例外，稽核讀整段受影響正文，不只 lint 命中行。lint 0 是必要條件，不是完成定義。
    - (d) 平行 writer 各寫自己的 report（`.claude/spec-write-report.<group>.json`），不共用一份。
 7. **版本分支（`spec/vX.Y.Z`）**：專案 `CLAUDE.md` 必須有一行宣告——`版本分支同步：有（spec-branch-sync）` 或 `版本分支同步：無（本專案無 milestone 版本）`；宣告「無」只守 4、5。安裝與操作步驟見配方 [`../recipes/spec-version-branches.md`](../recipes/spec-version-branches.md)（同步工具在 [`../recipes/spec-version-branches/`](../recipes/spec-version-branches/)；專案沒裝 → 回報「未安裝」，不自己補做法）。宣告「有」的專案守以下規則：
@@ -233,7 +233,7 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
 - **反向護欄**：為了短而砍掉**規則**＝更嚴重的錯。邊界條件、例外、排序依據、適用範圍都是規則，一條不能少。
 - **密度基準**：新寫的列 / 段落跟**鄰近既有列**同一密度；明顯長 2~3 倍就是在解釋自己，回頭刪。
 - **`last_updated` 只放日期**，不寫歷史；heading 同受本表約束（見 §SPEC 生命週期 1）。
-- **機械把關**（專案若有 prose lint 工具；未包含於此 repo）：diff 模式查新增行、全庫模式對 baseline 查全庫（皆硬門；pragma 與 baseline 規約見 §SPEC 生命週期 1）；限定詞守門工具列出改寫後限定詞／§ID／數字的變化供 verifier 判定。語意層（無日期無過程詞的解釋句）測不準，由 `phase0-spec-verifier` 維度 3 判。
+- **機械把關**（專案若有 prose lint 工具，見配方 [`spec-ci-gates.md`](../recipes/spec-ci-gates.md)）：diff 模式查新增行、全庫模式對 baseline 查全庫（皆硬門；pragma 與 baseline 規約見 §SPEC 生命週期 1）；限定詞守門工具列出改寫後限定詞／§ID／數字的變化供 verifier 判定。語意層（無日期無過程詞的解釋句）測不準，由 `phase0-spec-verifier` 維度 3 判。
 
 **保留既有章節的格式語言**：heading 層級（## / ###）、表格風格、列表縮排，新章節和原文件一致。
 
@@ -268,7 +268,7 @@ Phase 0＝三軸模型的**軸 B｜決策寫入引擎**，三情境共用：新�
 
 ### ③ 決策檔（`Spec/memory/`）
 
-**每次 SPEC 異動**都寫／更新一份決策檔（一決策一檔；欄位與內文四段見 §SPEC 生命週期 3），`Spec/memory/index/` 跑專案腳本產生、不手改。寫入位置與分層照 workspace 的 memory 分層政策（未包含於此 repo）：`$CLAUDE_WORKSPACE` 的 MEMORY.md 只收跨專案內容。
+**每次 SPEC 異動**都寫／更新一份決策檔（一決策一檔；欄位與內文四段見 §SPEC 生命週期 3），`Spec/memory/index/` 跑專案腳本（[`decisions.py`](../recipes/spec-ci-gates/decisions.py) `views`）產生、不手改。寫入位置與分層照 workspace 的 memory 分層政策（未包含於此 repo）：`$CLAUDE_WORKSPACE` 的 MEMORY.md 只收跨專案內容。
 
 ---
 
